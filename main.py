@@ -94,7 +94,7 @@ class Fenetre(Thread):
         lines = []
 
         for i in range(2):
-            lines.append(ax.plot(trajs[i].X, trajs[i].Y))
+            lines.append(ax.plot(trajs[i].X[-50:-1], trajs[i].Y[-50:-1]))
 
         anim = animation.FuncAnimation(fig, self.refresh,fargs=(lines, ax),interval=100)
 
@@ -102,7 +102,9 @@ class Fenetre(Thread):
         s.close()
     def refresh(self,frame,lines,ax):
         for i in range(2):
-            lines.append(ax.plot(trajs[i].X, trajs[i].Y))
+            lines[i][0].set_xdata(trajs[i].X)
+            lines[i][0].set_ydata(trajs[i].Y)
+
 
 
 testodoTraj, testcommandTraj = Traj(),Traj()
