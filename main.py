@@ -25,29 +25,33 @@ tailleenv = 16
 def nothing(rien=0):
     pass
 
-def threadfedtruk(threadname, q, port):
-    #read variable "a" modify by thread 2
-    print("faut mettre des trucs")
-    #TODO recuperation des infos du serial
-    t= 0
+def threadfedtruk(threadname, fromard, tointer, toard):
+    commandetest = [2,3,4,np.pi]
+    n = 0
     while 1:
-        sleep(0.1)
-        stuff = [[],[]]
+        commandetest[0] += .1
+        sleep(0.01)
+        read = fromard.get()
+        print(read)
+        toard.put(commandetest)
+        if not n%20:
+            tointer.put(read[1:3] + commandetest[1:3])
+        n += 1
 
-        stuff[0].append([t,uniform(0,3),uniform(0,2),uniform(0,360)])
-        stuff[1].append([t,uniform(0,3),uniform(0,2),uniform(0,360)])
 
-        q.put(stuff)
 
-        t += 1
+
+
+
+
 
 class Window(Frame):
     def __init__(self, figure, master):
         Frame.__init__(self, master)
         self.entry = None
         self.setPoint = None
-        self.master = master        # a reference to the master window
-        self.initWindow(figure)     # initialize the window with our settings
+        self.master = master        
+        self.initWindow(figure)     
 
     def initWindow(self, figure):
         self.master.title("Real Time Plot")
@@ -66,24 +70,16 @@ class Window(Frame):
 
 
 def threadcomenvoie(threadname, q, port):
-    #read variable "a" modify by thread 2
 
     #TODO recuperation des infos du serial
     t= 0
     while 1:
-        if q.qsize() > 10:
-            with q.mutex:
-                q.queue.clear()
-        q.get()
 
-        stuff[0].append([t,uniform(0,3),uniform(0,2),uniform(0,360)])
-        stuff[1].append([t,uniform(0,3),uniform(0,2),uniform(0,360)])
-
-        q.put(stuff)
-
+        write = q.get()
+        port.write(struck.pack('4f',write),size=tailleenv)
         t += 1
         print("envoie ",t)
-        sleep(0.1)
+        sleep(0.01)
 
 
 
@@ -92,12 +88,15 @@ def threadcomrecoie(threadname, q, port):
     t= 0
     while 1:
         sleep(0.01)
-
-        while port.in_waiting > 9:
+        if q.qsize() > 10:
+            with q.mutex:
+                q.queue.clear()
+        while port.in_waiting > taillerec -1:
 
             t += 1
-            read_serial= ser.read(size=taillerec)
+            read_serial= port.read(size=taillerec)
             read = struct.unpack('10f', read_serial)
+            q.put(read)
 
 
 
@@ -119,7 +118,6 @@ def threadinter(threadname, q):
         lines.append(ax.plot([],[]))
 
     anim = animation.FuncAnimation(fig, refresh,fargs=(lines, ax, newdata),interval=1000)
-
     root.mainloop()  
 
 
@@ -136,14 +134,17 @@ def refresh(frame,lines,ax,newdata):
 
 varsharefromard = Queue()
 varsharetoard = Queue()
+varsharetointer = Queue()
 
 comenv = Thread( target=threadcomenvoie, args=("Communication envoie", varsharetoard, ser) )
 comrec = Thread( target=threadcomrecoie, args=("Communication recoie", varsharefromard, ser) )
-inter = Thread( target=threadinter, args=("Interface", varsharefromard) )
-fedtruck = Thread( target=threadinter, args=("Interface", varsharefromard) )
+inter = Thread( target=threadinter, args=("Interface", varsharetointer) )
+fedtruk = Thread( target=threadfedtruk, args=("Process des donnees", varsharefromard,varsharetointer,varsharetoard) )
 
-threads = [comenv,comrec,inter,fedtruck]
+threads = [comenv,comrec,inter,fedtruk]
 
 for thr in threads:
     thr.start()
+
+for thr in threads:
     thr.join()
