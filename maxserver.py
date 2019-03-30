@@ -2,7 +2,7 @@
 from threading import Thread
 from time import sleep
 import socket
-from joformat import data2Bytes, bytes2Data, structFormatConfig, structFormatMeasure
+from joformat import Smdata
 
 
 class Server(Thread):
@@ -30,26 +30,21 @@ class Server(Thread):
 
             while True:
                 try:
-                    msg = sock.recv(2048)
+                    msg = sock.recv(256)
                 except:
                     q.put("errorconnection")
                     break
-                data = bytes2Data(structFormatConfig, msg)
-                q.put(data)
+                tmp = Smdata(msg)
+                q.put(tmp.info)
 
         def threadsen(threadname, sock, q):
-            data = q.get()
-            print(data,"server")
-            msg = data2Bytes(structFormatConfig, data)
-            sock.sendall(msg)
             while True:
                 try:
-                    data = q.get()
+                    tmp = q.get()
                 except:
                     break
-                msg = data2Bytes(structFormatMeasure, data)
-                print(data, msg)
-                sock.sendall(msg)
+                msg = Smdata(tmp)
+                sock.sendall(msg.bytes)
 
         comenv = Thread(target=threadsen, args=(
             "Communication envoie", clientsocket, self.sq))

@@ -2,14 +2,14 @@
 from threading import Thread
 from queue import Queue
 from time import sleep
-from joformat import data2Bytes, bytes2Data,  structFormatConfig, structFormatMeasure
+from joformat import Smdata
 import socket
 import numpy as np
 import matplotlib.pyplot as plt
 
 
 target = '127.0.0.1'
-port = 8456
+port = 8766
 
 # create a socket object
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -27,16 +27,15 @@ def threadrec(threadname, sock, q):
     positions = np.zeros((10, 100))
     speeds = np.zeros((10, 100))
 
-    msg = sock.recv(2048)
-    print(len(msg))
-    data = bytes2Data(structFormatConfig, msg)
-    print(data)
+    msg = sock.recv(256)
+    tmp = Smdata(msg)
+    print(tmp.info)
     for i in range(10):
         print(i+1, '/', 10)
         for j in range(100):
-            msg = sock.recv(2048)
-            data = bytes2Data(structFormatMeasure, msg)
-            timestamps[i, j], positions[i, j], speeds[i, j] = data
+            msg = sock.recv(256)
+            tmp = Smdata(msg)
+            timestamps[i, j], positions[i, j], speeds[i, j] = tmp.data
     speed = np.mean(speeds, axis=0)
     t = [i*0.01 for i in range(0, len(speed))]
 
@@ -51,8 +50,8 @@ def threadsen(threadname, sock, q):
     #     msg = str(q.get())
     #     sock.sendall(msg.encode('UTF-8'))
     #     print(msg)
-    msg = data2Bytes(structFormatConfig, [10, 100, 100, 220])
-    sock.sendall(msg)
+    msg = Smdata(['c', [10, 1000, 10, 220]])
+    sock.sendall(msg.bytes)
 
 
 varshare = Queue()

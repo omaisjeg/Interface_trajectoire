@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import struct
 
 typesDict = {'char': 'c', 'bool': '?',
@@ -9,6 +10,9 @@ typesDict = {'char': 'c', 'bool': '?',
 
 structFormatConfig = ['uint8', 'uint16', 'uint16', 'uint8']
 structFormatMeasure = ['uint32', 'uint32', 'float']
+
+formatDict = {'c': structFormatConfig,
+              'm': structFormatMeasure}
 
 
 def computeFormat(structFormat):
@@ -36,3 +40,24 @@ def bytes2Data(structFormat, rawData):
 def dataSize(structFormat):
     structTypes = computeFormat(structFormat)
     return struct.calcsize(structTypes)
+
+
+class Smdata:
+    def __init__(self, arg):
+        if isinstance(arg, (bytearray,bytes)):
+            if arg[0] != 62 or arg[2] != 60:
+                print(arg)
+                raise 'ERROR MSG CORROMPU'
+            self.bytes = arg
+            self.name = arg[1:2].decode('ASCII')
+            self.format = formatDict[self.name]
+            self.raw = arg[3:]
+            self.data = bytes2Data(self.format, self.raw)
+            self.info = [self.name, self.data]
+        if isinstance(arg, (list, tuple)):
+            self.info = list(arg)
+            self.name, self.data = arg
+            self.format = formatDict[self.name]
+            self.raw = data2Bytes(self.format, self.data)
+            tmp = ">" + self.name + "<"
+            self.bytes = tmp.encode('ASCII') + self.raw
