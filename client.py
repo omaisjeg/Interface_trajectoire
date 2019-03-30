@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 
 target = '127.0.0.1'
-port = 8766
+port = 8666
 
 # create a socket object
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -50,7 +50,7 @@ def threadsen(threadname, sock, q):
     #     msg = str(q.get())
     #     sock.sendall(msg.encode('UTF-8'))
     #     print(msg)
-    msg = Smdata(['c', [10, 1000, 10, 220]])
+    msg = Smdata(['c', [10, 100, 1, 220]])
     sock.sendall(msg.bytes)
 
 

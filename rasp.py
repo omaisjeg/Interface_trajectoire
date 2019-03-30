@@ -1,6 +1,6 @@
 import joserial
 import maxserver
-from joformat import structFormatConfig, structFormatMeasure, bytes2Data, Smdata
+from joformat import Smdata
 from queue import Queue
 from threading import Thread
 
@@ -14,18 +14,17 @@ qrec = Queue()
 
 
 ard = joserial.Connection(portName, baudRate)
-trans = maxserver.Server(8766, qsend, qrec)
+trans = maxserver.Server(8666, qsend, qrec)
 trans.start()
 
 
 def tmpfromard(q, ser):
-    rawData = ser.readData()
-    data = bytes2Data(structFormatConfig, rawData)
-    q.put(['c', data])
+    data = ser.readData('c')
+    print(data)
+    q.put(data)
     while True:
-        rawData = ser.readData()
-        data = bytes2Data(structFormatMeasure, rawData)
-        q.put(['m', data])
+        data = ser.readData('m')
+        q.put(data)
 
 
 def tmptoard(q, ser):
@@ -33,8 +32,7 @@ def tmptoard(q, ser):
         data = q.get()
         print(data)
         if data != "errorconnection":
-            info = Smdata(data)
-            ser.writeData(info.bytes)
+            ser.writeData(data)
 
 
 fromar = Thread(target=tmpfromard, args=(qsend, ard))
