@@ -14,16 +14,14 @@ qrec = Queue()
 
 
 ard = joserial.Connection(portName, baudRate)
-trans = maxserver.Server(8666, qsend, qrec)
+trans = maxserver.Server(8650, qsend, qrec)
 trans.start()
 
 
 def tmpfromard(q, ser):
-    data = ser.readData('c')
-    print(data)
-    q.put(data)
     while True:
-        data = ser.readData('m')
+        data = ser.readData('o')
+        print(data)
         q.put(data)
 
 

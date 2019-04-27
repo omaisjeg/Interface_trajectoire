@@ -10,9 +10,11 @@ typesDict = {'char': 'c', 'bool': '?',
 
 structFormatConfig = ['uint8', 'uint16', 'uint16', 'uint8']
 structFormatMeasure = ['uint32', 'uint32', 'float']
+structFormatCoordonnees = ['float', 'float', 'float']
 
 formatDict = {'c': structFormatConfig,
-              'm': structFormatMeasure}
+              'm': structFormatMeasure,
+              'o': structFormatCoordonnees}
 
 
 def computeFormat(structFormat):
@@ -51,7 +53,7 @@ class Smdata:
             self.bytes = arg
             self.name = arg[1:2].decode('ASCII')
             self.format = formatDict[self.name]
-            self.raw = arg[3:]
+            self.raw = arg[3:dataSize(self.format)+3]
             self.data = bytes2Data(self.format, self.raw)
             self.info = [self.name, self.data]
         if isinstance(arg, (list, tuple)):
