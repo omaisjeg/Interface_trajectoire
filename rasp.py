@@ -14,7 +14,7 @@ qrec = Queue()
 
 
 ard = joserial.Connection(portName, baudRate)
-trans = maxserver.Server(8651, qsend, qrec)
+trans = maxserver.Server(8653, qsend, qrec)
 trans.start()
 
 

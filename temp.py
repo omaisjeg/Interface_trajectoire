@@ -7,7 +7,7 @@ from joformat import Smdata
 
 
 target = '127.0.0.1'
-port = 8651
+port = 8653
 
 # create a socket object
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -24,7 +24,7 @@ coord = [x_queue, y_queue, theta_queue]
 
 fig, ax = plt.subplots()
 
-lines, = ax.plot(np.zeros(100), np.zeros(100))
+lines = ax.plot(np.zeros(100), np.zeros(100), "b",0,0,"rx")
 ax.set_title('X/Y Temps réel')
 ax.legend()
 ax.set_xlim([-.2, 3.2])
@@ -44,12 +44,13 @@ def refresh(i, lines, ax, sock, coordonnees):
     x = np.array(x_q)/100
     y = np.array(y_q)/100
     theta = np.array(theta_q)
-    lines.set_data(x, y)
+    lines[0].set_data(x, y)
+    lines[1].set_data(x[-1], y[-1])
 
     return ax
 
 
-ani = animation.FuncAnimation(fig, refresh, 10000,
+ani = animation.FuncAnimation(fig, refresh, 100,
                               fargs=(lines, ax, s, coord), interval=30)
 
 plt.show()
